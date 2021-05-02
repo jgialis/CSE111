@@ -1,0 +1,4 @@
+(no new indexes)
+
+SEARCH TABLE customer USING INDEX customer_idx_c_name (c_name=?)
+

@@ -1,0 +1,7 @@
+{
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "/home/florin/Documents/Work/Teaching/DatabaseSystems/2020-Fall/Computers/Quiz-4/**/*.jar",
+        "sqlite-jdbc-3.32.3.2.jar"
+    ]
+}

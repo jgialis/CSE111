@@ -1,0 +1,4 @@
+(no new indexes)
+
+SEARCH TABLE supplier USING COVERING INDEX supplier_idx_s_acctbal
+

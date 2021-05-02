@@ -1,0 +1,5 @@
+(no new indexes)
+
+SCAN TABLE customer USING INDEX customer_idx_c_mktsegment
+USE TEMP B-TREE FOR ORDER BY
+

@@ -1,0 +1,1188 @@
+
+
+
+
+
+import java.sql.*;
+import java.io.FileWriter;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.io.PrintWriter;
+import java.io.File;
+
+public class Lab_7 {
+    private Connection c = null;
+    private String dbName;
+    private boolean isConnected = false;
+    public ArrayList<String> nums = new ArrayList<String>();
+    private ArrayList<Integer> numsSK = new ArrayList<Integer>();
+    
+
+private void openConnection(String _dbName) {
+        dbName = _dbName;
+
+        if (false == isConnected) {
+            System.out.println("++++++++++++++++++++++++++++++++++");
+            System.out.println("Open database: " + _dbName);
+
+            try {
+                String connStr = new String("jdbc:sqlite:");
+                connStr = connStr + _dbName;
+
+                // STEP: Register JDBC driver
+                Class.forName("org.sqlite.JDBC");
+
+                // STEP: Open a connection
+                c = DriverManager.getConnection(connStr);
+
+                // STEP: Diable auto transactions
+                c.setAutoCommit(false);
+
+                isConnected = true;
+                System.out.println("success");
+            } catch (Exception e) {
+                System.err.println(e.getClass().getName() + ": " + e.getMessage());
+                System.exit(0);
+            }
+
+            System.out.println("++++++++++++++++++++++++++++++++++");
+        }
+    }
+
+private void closeConnection() {
+        if (true == isConnected) {
+            System.out.println("++++++++++++++++++++++++++++++++++");
+            System.out.println("Close database: " + dbName);
+
+            try {
+                // STEP: Close connection
+                c.close();
+
+                isConnected = false;
+                dbName = "";
+                System.out.println("success");
+            } catch (Exception e) {
+                System.err.println(e.getClass().getName() + ": " + e.getMessage());
+                System.exit(0);
+            }
+
+            System.out.println("++++++++++++++++++++++++++++++++++");
+        }
+    }
+
+private void createTable() {
+        System.out.println("++++++++++++++++++++++++++++++++++");
+        System.out.println("Create table");
+        try {
+            Statement stmt = c.createStatement();
+
+            // STEP: Execute update statement
+            String sql = "CREATE TABLE warehouse ( " +
+                            "w_warehousekey decimal(9,0)," +
+                            "w_name char(100)," +
+                            "w_capacity decimal(6,0)," +
+                            "w_suppkey decimal(9,0)," +
+                            "w_nationkey decimal(2,0) )";
+
+            stmt.execute(sql);
+            c.commit();
+            stmt.close();
+            System.out.println("success");
+        }
+            catch (Exception e) {
+                System.err.println(e.getClass().getName() + ": " + e.getMessage());
+                try {
+                    c.rollback();
+                } catch (Exception e1) {
+                    System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+                }
+            }
+        System.out.println("++++++++++++++++++++++++++++++++++");
+    }
+
+private void dropTable() {
+        System.out.println("++++++++++++++++++++++++++++++++++");
+        System.out.println("Drop tables");
+
+        try {
+            Statement stmt = c.createStatement();
+
+            // STEP: Execute update statement
+            String sql = "DROP TABLE warehouse";
+            stmt.execute(sql);
+
+            // STEP: Commit transaction
+            c.commit();
+
+            stmt.close();
+            System.out.println("success");
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            try {
+                c.rollback();
+            } catch (Exception e1) {
+                System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+            }
+        }
+
+        System.out.println("++++++++++++++++++++++++++++++++++");
+    }
+    
+
+public Lab_7(){
+        nums.add(Integer.toString(0));
+        for (int i = 1; i <= 200; i++) {
+            nums.add(Integer.toString(i));
+        }
+        numsSK.add(1);
+        for (int i = 1; i <= nums.size(); i++) {
+            numsSK.add(i);
+            for (int j = i; j <= i; j++) 
+                numsSK.add(j);
+        }
+    }
+
+
+private void delete_from() {
+        System.out.println("++++++++++++++++++++++++++++++++++");
+        System.out.println("Delete PC");
+
+        try {
+
+            String sql = "DELETE FROM warehouse WHERE w_warehousekey = 201";
+        
+            
+            PreparedStatement stmt = c.prepareStatement(sql);
+
+
+            // STEP: Execute batch
+            stmt.executeUpdate();
+
+            // STEP: Commit transaction
+            c.commit();
+
+            stmt.close();
+            System.out.println("success");
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            try {
+                c.rollback();
+            } catch (Exception e1) {
+                System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+            }
+        }
+
+        System.out.println("++++++++++++++++++++++++++++++++++");
+    }
+
+
+
+
+    
+private void populateTable() {
+        System.out.println("++++++++++++++++++++++++++++++++++");
+        System.out.println("Populate warehouse");
+
+        for(int i = 1; i <= nums.size(); i++)
+            insert_warehouse(i);
+        for(int k = 1; k <= nums.size(); k++)
+            update_warehouseSK(numsSK.get(k),k);
+
+            get_warehouseNames();
+            get_warehouseCapacity();
+            get_warehouseNationKey();
+
+            update_warehouseName("Supplier#000000005___CANADA", 9);
+            update_warehouseName("Supplier#000000005___EGYPT", 10);
+            update_warehouseName("Supplier#000000018___CANADA", 36);
+            update_warehouseName("Supplier#000000021___BRAZIL", 42);
+            update_warehouseName("Supplier#000000023___EGYPT", 45);
+            update_warehouseName("Supplier#000000023___IRAN", 46);
+            update_warehouseName("Supplier#000000034___ALGERIA", 67);
+            update_warehouseName("Supplier#000000034___MOZAMBIQUE", 68);
+            update_warehouseName("Supplier#000000036___ALGERIA", 71);
+            update_warehouseName("Supplier#000000036___BRAZIL", 72);
+            update_warehouseName("Supplier#000000041___ALGERIA", 82);
+            update_warehouseName("Supplier#000000056___EGYPT", 112);
+            update_warehouseName("Supplier#000000058___EGYPT", 116);
+            update_warehouseName("Supplier#000000060___GERMANY", 120);
+            update_warehouseName("Supplier#000000061___IRAN", 122);
+            update_warehouseName("Supplier#000000063___MOZAMBIQUE", 126);
+            update_warehouseName("Supplier#000000064___CANADA", 127);
+            update_warehouseName("Supplier#000000064___IRAN", 128);
+            update_warehouseName("Supplier#000000070___INDONESIA", 139);
+            update_warehouseName("Supplier#000000070___ROMANIA", 140);
+            update_warehouseName("Supplier#000000074___CANADA", 148);
+            update_warehouseName("Supplier#000000076___BRAZIL", 152);
+            update_warehouseName("Supplier#000000077___EGYPT", 153);
+            update_warehouseName("Supplier#000000077___KENYA", 154);
+            update_warehouseName("Supplier#000000080___BRAZIL", 160);
+            update_warehouseName("Supplier#000000081___ALGERIA", 161);
+            update_warehouseName("Supplier#000000081___JAPAN", 162);
+            update_warehouseName("Supplier#000000081___JAPAN", 163);
+            update_warehouseName("Supplier#000000082___IRAN", 164);
+            update_warehouseName("Supplier#000000085___JORDAN", 169);
+            update_warehouseName("Supplier#000000085___UNITED KINGDOM", 170);
+            update_warehouseName("Supplier#000000087___EGYPT", 173);
+            update_warehouseName("Supplier#000000087___SAUDI ARABIA", 174);
+            update_warehouseName("Supplier#000000088___ALGERIA", 175);
+            update_warehouseName("Supplier#000000088___VIETNAM", 176);
+            update_warehouseName("Supplier#000000089___IRAN", 178);
+            update_warehouseName("Supplier#000000091___ALGERIA", 181);
+            update_warehouseName("Supplier#000000091___KENYA", 182);
+            update_warehouseName("Supplier#000000092___ALGERIA", 184);
+            update_warehouseName("Supplier#000000094___BRAZIL", 187);
+            update_warehouseName("Supplier#000000094___EGYPT", 188);
+            update_warehouseName("Supplier#000000098___CANADA", 195);
+            update_warehouseName("Supplier#000000098___IRAN", 196);
+            update_warehouseName("Supplier#000000100___IRAN", 199);
+            update_warehouseName("Supplier#000000100___JAPAN", 200);
+
+        System.out.println("success");
+        System.out.println("++++++++++++++++++++++++++++++++++");
+    }
+
+
+
+
+private void insert_warehouse(int w_warehousekey, String w_name, int w_capacity, int w_suppkey, int w_natiionkey) {
+        System.out.println("++++++++++++++++++++++++++++++++++");
+        System.out.println("Insert PC");
+
+        try {
+            String sql = "INSERT INTO warehouse(w_warehousekey, w_name, w_capacity, w_suppkey, w_nationkey) " +
+                "VALUES(?, ?, ?, ?, ?)";
+            PreparedStatement stmt = c.prepareStatement(sql);
+
+            stmt.setInt(1, w_warehousekey);
+            stmt.setString(2, w_name);
+            stmt.setInt(3, w_capacity);
+            stmt.setInt(4, w_suppkey);
+            stmt.setInt(5, w_natiionkey);
+
+            // STEP: Execute batch
+            stmt.executeUpdate();
+
+            // STEP: Commit transaction
+            c.commit();
+
+            stmt.close();
+            System.out.println("success");
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            try {
+                c.rollback();
+            } catch (Exception e1) {
+                System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+            }
+        }
+
+        System.out.println("++++++++++++++++++++++++++++++++++");
+    }
+
+
+private void insert_warehouse(int w_warehousekey) {
+        System.out.println("++++++++++++++++++++++++++++++++++");
+        System.out.println("Insert PC");
+
+        try {
+            String sql = "INSERT INTO warehouse(w_warehousekey) " +
+                "VALUES(?)";
+            PreparedStatement stmt = c.prepareStatement(sql);
+
+            stmt.setInt(1, w_warehousekey);
+
+            // STEP: Execute batch
+            stmt.executeUpdate();
+
+            // STEP: Commit transaction
+            c.commit();
+
+            stmt.close();
+            System.out.println("success");
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            try {
+                c.rollback();
+            } catch (Exception e1) {
+                System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+            }
+        }
+
+        System.out.println("++++++++++++++++++++++++++++++++++");
+    }
+
+private void update_warehouseName(String w_name, int i) {
+        System.out.println("++++++++++++++++++++++++++++++++++");
+        System.out.println("Insert PC");
+
+        try {
+
+            String sql = "UPDATE warehouse SET w_name = ? WHERE w_warehousekey = " + nums.get(i);
+        
+            
+            PreparedStatement stmt = c.prepareStatement(sql);
+
+            stmt.setString(1, w_name);
+
+            // STEP: Execute batch
+            stmt.executeUpdate();
+
+            // STEP: Commit transaction
+            c.commit();
+
+            stmt.close();
+            System.out.println("success");
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            try {
+                c.rollback();
+            } catch (Exception e1) {
+                System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+            }
+        }
+
+        System.out.println("++++++++++++++++++++++++++++++++++");
+    }
+
+
+private void update_warehouseCapacity(int w_capacity, int i) {
+        System.out.println("++++++++++++++++++++++++++++++++++");
+        System.out.println("Insert PC");
+
+        try {
+
+            String sql = "UPDATE warehouse SET w_capacity = ? WHERE w_warehousekey = " + nums.get(i);
+        
+            
+            PreparedStatement stmt = c.prepareStatement(sql);
+
+            stmt.setInt(1, w_capacity);
+
+            // STEP: Execute batch
+            stmt.executeUpdate();
+
+            // STEP: Commit transaction
+            c.commit();
+
+            stmt.close();
+            System.out.println("success");
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            try {
+                c.rollback();
+            } catch (Exception e1) {
+                System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+            }
+        }
+
+        System.out.println("++++++++++++++++++++++++++++++++++");
+    }
+
+
+private void update_warehouseSK(int w_suppkey, int i) {
+        System.out.println("++++++++++++++++++++++++++++++++++");
+        System.out.println("Insert PC");
+
+        try {
+
+            String sql = "UPDATE warehouse SET w_suppkey = ? WHERE w_warehousekey = " + nums.get(i);
+        
+            
+            PreparedStatement stmt = c.prepareStatement(sql);
+
+            stmt.setInt(1, w_suppkey);
+
+            // STEP: Execute batch
+            stmt.executeUpdate();
+
+            // STEP: Commit transaction
+            c.commit();
+
+            stmt.close();
+            System.out.println("success");
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            try {
+                c.rollback();
+            } catch (Exception e1) {
+                System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+            }
+        }
+
+        System.out.println("++++++++++++++++++++++++++++++++++");
+    }
+
+private void update_warehouseNationKey(int w_nationkey, int i) {
+        System.out.println("++++++++++++++++++++++++++++++++++");
+        System.out.println("Insert PC");
+
+        try {
+
+            String sql = "UPDATE warehouse SET w_nationkey = ? WHERE w_warehousekey = " + nums.get(i);
+        
+            
+            PreparedStatement stmt = c.prepareStatement(sql);
+
+            stmt.setInt(1, w_nationkey);
+
+            // STEP: Execute batch
+            stmt.executeUpdate();
+
+            // STEP: Commit transaction
+            c.commit();
+
+            stmt.close();
+            System.out.println("success");
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+            try {
+                c.rollback();
+            } catch (Exception e1) {
+                System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+            }
+        }
+
+        System.out.println("++++++++++++++++++++++++++++++++++");
+    }
+
+public void get_warehouseNames(){
+    int iter = 1;
+        for(int i = 1; i < nums.size(); i++){
+            String sql = "SELECT n1.n_name, s_name, n1.n_nationkey, COUNT(l_orderkey) " +
+            "FROM lineitem, customer, orders, nation n1, nation n2, supplier " + 
+            "WHERE l_suppkey = " + nums.get(i) +
+            " AND c_custkey = o_custkey AND " +
+            "l_orderkey = o_orderkey AND " +
+            "n1.n_nationkey = c_nationkey AND " +
+            "s_nationkey = n2.n_nationkey AND " +
+            "s_suppkey = l_suppkey " +
+            "GROUP BY n1.n_name " +
+            "ORDER BY COUNT(l_orderkey) DESC " + 
+            "LIMIT 2 ";
+
+   
+        try (Statement stmt = c.createStatement()) {
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                System.out.println("Adding : " + rs.getString("n_name"));
+                update_warehouseName(rs.getString("s_name") + "___" + rs.getString("n_name"), iter);
+                iter++;
+            }
+        } catch (SQLException e) {
+            
+          }
+    }
+        
+    }
+
+
+public void get_warehouseNationKey(){
+        int iter = 1;
+            for(int i = 1; i < nums.size(); i++){
+                String sql = "SELECT n1.n_name, s_name, n1.n_nationkey " +
+                "FROM lineitem, customer, orders, nation n1, nation n2, supplier " + 
+                "WHERE l_suppkey = " + nums.get(i) +
+                " AND c_custkey = o_custkey AND " +
+                "l_orderkey = o_orderkey AND " +
+                "n1.n_nationkey = c_nationkey AND " +
+                "s_nationkey = n2.n_nationkey AND " +
+                "s_suppkey = l_suppkey " +
+                "GROUP BY n1.n_name " +
+                "ORDER BY COUNT(l_orderkey) DESC " + 
+                "LIMIT 2 ";
+       
+            try (Statement stmt = c.createStatement()) {
+                ResultSet rs = stmt.executeQuery(sql);
+                while (rs.next()) {
+                    update_warehouseNationKey(rs.getInt("n_nationkey"), iter);
+                    iter++;
+                }
+            } catch (SQLException e) {
+                
+              }
+        }
+            
+        }
+
+
+
+    public void get_warehouseCapacity(){
+        int iter = 1;
+        for(int i = 1; i < nums.size()/2 + 1; i++){
+            String sql = "SELECT MAX(maxPart) FROM (SELECT n1.n_name, COUNT(l_orderkey) ,SUM(2 * p_size) AS maxPart " +
+            "FROM lineitem, customer, orders, nation n1, nation n2, supplier, part " + 
+            "WHERE l_suppkey = " + nums.get(i) +
+            " AND c_custkey = o_custkey AND " +
+            "l_orderkey = o_orderkey AND " +
+            "n1.n_nationkey = c_nationkey AND " +
+            "s_nationkey = n2.n_nationkey AND " +
+            "s_suppkey = l_suppkey AND " +
+            "l_partkey = p_partkey " +
+            "GROUP BY n1.n_name " +
+            "ORDER BY COUNT(l_orderkey) DESC)" + 
+            "UNION ALL " +
+            "SELECT MAX(maxPart) FROM (SELECT n1.n_name, COUNT(l_orderkey) ,SUM(2 * p_size) AS maxPart " +
+            "FROM lineitem, customer, orders, nation n1, nation n2, supplier, part " + 
+            "WHERE l_suppkey = " + nums.get(i) +
+            " AND c_custkey = o_custkey AND " +
+            "l_orderkey = o_orderkey AND " +
+            "n1.n_nationkey = c_nationkey AND " +
+            "s_nationkey = n2.n_nationkey AND " +
+            "s_suppkey = l_suppkey AND " +
+            "l_partkey = p_partkey " +
+            "GROUP BY n1.n_name " +
+            "ORDER BY COUNT(l_orderkey) DESC); ";
+
+        
+        try (Statement stmt = c.createStatement()) {
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                update_warehouseCapacity(rs.getInt("MAX(maxPart)"), iter);
+                iter++;
+                update_warehouseCapacity(rs.getInt("MAX(maxPart)"), iter);
+            }
+            
+        } catch (SQLException e) {
+            
+          }
+    }
+        
+    }
+
+    private void Q1() {
+        System.out.println("++++++++++++++++++++++++++++++++++");
+        System.out.println("Q1");
+
+        try {
+            FileWriter writer = new FileWriter("output/1.out", false);
+            PrintWriter printer = new PrintWriter(writer);
+                
+            printer.printf("%10s %-40s %10s %10s %10s\n", "wId", "wName", "wCap", "sId", "nId");
+
+            printer.close();
+            writer.close();
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+        }
+
+        System.out.println("++++++++++++++++++++++++++++++++++");
+    }
+
+    private void Q2() {
+        System.out.println("++++++++++++++++++++++++++++++++++");
+        System.out.println("Q2");
+
+        try {
+            FileWriter writer = new FileWriter("output/2.out", false);
+            PrintWriter printer = new PrintWriter(writer);
+
+            printer.printf("%-40s %10s %10s\n", "nation", "numW", "totCap");
+
+            printer.close();
+            writer.close();
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+        }
+
+        System.out.println("++++++++++++++++++++++++++++++++++");
+    }
+
+    private void Q3() {
+        System.out.println("++++++++++++++++++++++++++++++++++");
+        System.out.println("Q3");
+
+        try {
+            File fn = new File("input/3.in");
+            FileReader reader = new FileReader(fn);
+            BufferedReader in = new BufferedReader(reader);
+            String nation = in.readLine();
+            in.close();
+
+            FileWriter writer = new FileWriter("output/3.out", false);
+            PrintWriter printer = new PrintWriter(writer);
+
+            printer.printf("%-20s %-20s %-40s\n", "supplier", "nation", "warehouse");
+
+            printer.close();
+            writer.close();
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+        }
+
+        System.out.println("++++++++++++++++++++++++++++++++++");
+    }
+
+    private void Q4() {
+        System.out.println("++++++++++++++++++++++++++++++++++");
+        System.out.println("Q4");
+
+        try {
+            File fn = new File("input/4.in");
+            FileReader reader = new FileReader(fn);
+            BufferedReader in = new BufferedReader(reader);
+            String region = in.readLine();
+            int cap = Integer.parseInt(in.readLine());
+            in.close();
+
+            FileWriter writer = new FileWriter("output/4.out", false);
+            PrintWriter printer = new PrintWriter(writer);
+
+            printer.printf("%-40s %10s\n", "warehouse", "capacity");
+
+            printer.close();
+            writer.close();
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+        }
+
+        System.out.println("++++++++++++++++++++++++++++++++++");
+    }
+
+    private void Q5() {
+        System.out.println("++++++++++++++++++++++++++++++++++");
+        System.out.println("Q5");
+
+        try {
+            File fn = new File("input/5.in");
+            FileReader reader = new FileReader(fn);
+            BufferedReader in = new BufferedReader(reader);
+            String nation = in.readLine();
+            in.close();
+
+            FileWriter writer = new FileWriter("output/5.out", false);
+            PrintWriter printer = new PrintWriter(writer);
+
+            printer.printf("%-20s %20s\n", "region", "capacity");
+
+            printer.close();
+            writer.close();
+        } catch (Exception e) {
+            System.err.println(e.getClass().getName() + ": " + e.getMessage());
+        }
+
+        System.out.println("++++++++++++++++++++++++++++++++++");
+    
+
+
+public static void main(String args[]) {
+        lab7RD sj = new lab7RD();
+        
+        sj.openConnection("data/tpch.sqlite");
+        sj.dropTable();
+        sj.createTable();
+        sj.populateTable();
+        sj.delete_from();
+        sj.Q1();
+        sj.Q2();
+        sj.Q3();
+        sj.Q4();
+        sj.Q5();
+        sj.closeConnection();   
+
+        
+
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// -----------WORKING VERSION @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// // STEP: Import required packages
+// import java.security.DrbgParameters.Capability;
+// import java.sql.*;
+// import java.util.ArrayList;
+// import java.util.Collections;
+
+
+// public class lab7RD {
+//     private Connection c = null;
+//     private String dbName;
+//     private boolean isConnected = false;
+//     public ArrayList<String> nums = new ArrayList<String>();
+//     private ArrayList<Integer> numsSK = new ArrayList<Integer>();
+//     public ArrayList<String> nations = new ArrayList<String>();
+//     public ArrayList<Integer> nations_key = new ArrayList<Integer>();
+//     public ArrayList<Integer> capacity = new ArrayList<Integer>();
+    
+
+// private void openConnection(String _dbName) {
+//         dbName = _dbName;
+
+//         if (false == isConnected) {
+//             System.out.println("++++++++++++++++++++++++++++++++++");
+//             System.out.println("Open database: " + _dbName);
+
+//             try {
+//                 String connStr = new String("jdbc:sqlite:");
+//                 connStr = connStr + _dbName;
+
+//                 // STEP: Register JDBC driver
+//                 Class.forName("org.sqlite.JDBC");
+
+//                 // STEP: Open a connection
+//                 c = DriverManager.getConnection(connStr);
+
+//                 // STEP: Diable auto transactions
+//                 c.setAutoCommit(false);
+
+//                 isConnected = true;
+//                 System.out.println("success");
+//             } catch (Exception e) {
+//                 System.err.println(e.getClass().getName() + ": " + e.getMessage());
+//                 System.exit(0);
+//             }
+
+//             System.out.println("++++++++++++++++++++++++++++++++++");
+//         }
+//     }
+
+// private void closeConnection() {
+//         if (true == isConnected) {
+//             System.out.println("++++++++++++++++++++++++++++++++++");
+//             System.out.println("Close database: " + dbName);
+
+//             try {
+//                 // STEP: Close connection
+//                 c.close();
+
+//                 isConnected = false;
+//                 dbName = "";
+//                 System.out.println("success");
+//             } catch (Exception e) {
+//                 System.err.println(e.getClass().getName() + ": " + e.getMessage());
+//                 System.exit(0);
+//             }
+
+//             System.out.println("++++++++++++++++++++++++++++++++++");
+//         }
+//     }
+
+// private void createTable() {
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//         System.out.println("Create table");
+//         try {
+//             Statement stmt = c.createStatement();
+
+//             // STEP: Execute update statement
+//             String sql = "CREATE TABLE warehouse ( " +
+//                             "w_warehousekey decimal(9,0)," +
+//                             "w_name char(100)," +
+//                             "w_capacity decimal(6,0)," +
+//                             "w_suppkey decimal(9,0)," +
+//                             "w_nationkey decimal(2,0) )";
+
+//             stmt.execute(sql);
+//             c.commit();
+//             stmt.close();
+//             System.out.println("success");
+//         }
+//             catch (Exception e) {
+//                 System.err.println(e.getClass().getName() + ": " + e.getMessage());
+//                 try {
+//                     c.rollback();
+//                 } catch (Exception e1) {
+//                     System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+//                 }
+//             }
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//     }
+
+// private void dropTable() {
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//         System.out.println("Drop tables");
+
+//         try {
+//             Statement stmt = c.createStatement();
+
+//             // STEP: Execute update statement
+//             String sql = "DROP TABLE warehouse";
+//             stmt.execute(sql);
+
+//             // STEP: Commit transaction
+//             c.commit();
+
+//             stmt.close();
+//             System.out.println("success");
+//         } catch (Exception e) {
+//             System.err.println(e.getClass().getName() + ": " + e.getMessage());
+//             try {
+//                 c.rollback();
+//             } catch (Exception e1) {
+//                 System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+//             }
+//         }
+
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//     }
+    
+
+// public lab7RD(){
+//         nums.add(Integer.toString(0));
+//         for (int i = 1; i <= 200; i++) {
+//             nums.add(Integer.toString(i));
+//         }
+//         numsSK.add(1);
+//         for (int i = 1; i <= nums.size(); i++) {
+//             numsSK.add(i);
+//             for (int j = i; j <= i; j++) 
+//                 numsSK.add(j);
+            
+//         }
+//     }
+
+
+// private void delete_from() {
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//         System.out.println("Delete PC");
+
+//         try {
+
+//             String sql = "DELETE FROM warehouse WHERE w_warehousekey = 201";
+        
+            
+//             PreparedStatement stmt = c.prepareStatement(sql);
+
+
+//             // STEP: Execute batch
+//             stmt.executeUpdate();
+
+//             // STEP: Commit transaction
+//             c.commit();
+
+//             stmt.close();
+//             System.out.println("success");
+//         } catch (Exception e) {
+//             System.err.println(e.getClass().getName() + ": " + e.getMessage());
+//             try {
+//                 c.rollback();
+//             } catch (Exception e1) {
+//                 System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+//             }
+//         }
+
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//     }
+
+
+
+
+    
+// private void populateTable_warehouse() {
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//         System.out.println("Populate warehouse");
+
+//         for(int i = 1; i <= nums.size(); i++)
+//             insert_warehouse(i);
+//         get_warehouseNames();
+//         for(int j = 1; j <= 200; j++)
+//             update_warehouseName(nations.get(j - 1),j);
+//         for(int j = 1; j <= 200; j++)
+//             update_warehouseNationKey(nations_key.get(j - 1),j);
+//         get_warehouseCapacity();
+//         for(int j = 1; j <= 200; j++)
+//             update_warehouseCapacity(capacity.get(j - 1),j);
+
+        
+        
+//         for(int k = 1; k <= nums.size(); k++)
+//             update_warehouseSK(numsSK.get(k),k);
+
+//         System.out.println("success");
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//     }
+
+
+
+
+// private void insert_warehouse(int w_warehousekey, String w_name, int w_capacity, int w_suppkey, int w_natiionkey) {
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//         System.out.println("Insert PC");
+
+//         try {
+//             String sql = "INSERT INTO warehouse(w_warehousekey, w_name, w_capacity, w_suppkey, w_nationkey) " +
+//                 "VALUES(?, ?, ?, ?, ?)";
+//             PreparedStatement stmt = c.prepareStatement(sql);
+
+//             stmt.setInt(1, w_warehousekey);
+//             stmt.setString(2, w_name);
+//             stmt.setInt(3, w_capacity);
+//             stmt.setInt(4, w_suppkey);
+//             stmt.setInt(5, w_natiionkey);
+
+//             // STEP: Execute batch
+//             stmt.executeUpdate();
+
+//             // STEP: Commit transaction
+//             c.commit();
+
+//             stmt.close();
+//             System.out.println("success");
+//         } catch (Exception e) {
+//             System.err.println(e.getClass().getName() + ": " + e.getMessage());
+//             try {
+//                 c.rollback();
+//             } catch (Exception e1) {
+//                 System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+//             }
+//         }
+
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//     }
+
+
+// private void insert_warehouse(int w_warehousekey) {
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//         System.out.println("Insert PC");
+
+//         try {
+//             String sql = "INSERT INTO warehouse(w_warehousekey) " +
+//                 "VALUES(?)";
+//             PreparedStatement stmt = c.prepareStatement(sql);
+
+//             stmt.setInt(1, w_warehousekey);
+
+//             // STEP: Execute batch
+//             stmt.executeUpdate();
+
+//             // STEP: Commit transaction
+//             c.commit();
+
+//             stmt.close();
+//             System.out.println("success");
+//         } catch (Exception e) {
+//             System.err.println(e.getClass().getName() + ": " + e.getMessage());
+//             try {
+//                 c.rollback();
+//             } catch (Exception e1) {
+//                 System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+//             }
+//         }
+
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//     }
+
+// private void update_warehouseName(String w_name, int i) {
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//         System.out.println("Insert PC");
+
+//         try {
+
+//             String sql = "UPDATE warehouse SET w_name = ? WHERE w_warehousekey = " + nums.get(i);
+        
+            
+//             PreparedStatement stmt = c.prepareStatement(sql);
+
+//             stmt.setString(1, w_name);
+
+//             // STEP: Execute batch
+//             stmt.executeUpdate();
+
+//             // STEP: Commit transaction
+//             c.commit();
+
+//             stmt.close();
+//             System.out.println("success");
+//         } catch (Exception e) {
+//             System.err.println(e.getClass().getName() + ": " + e.getMessage());
+//             try {
+//                 c.rollback();
+//             } catch (Exception e1) {
+//                 System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+//             }
+//         }
+
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//     }
+
+
+//     private void update_warehouseCapacity(int w_capacity, int i) {
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//         System.out.println("Insert PC");
+
+//         try {
+
+//             String sql = "UPDATE warehouse SET w_capacity = ? WHERE w_warehousekey = " + nums.get(i);
+        
+            
+//             PreparedStatement stmt = c.prepareStatement(sql);
+
+//             stmt.setInt(1, w_capacity);
+
+//             // STEP: Execute batch
+//             stmt.executeUpdate();
+
+//             // STEP: Commit transaction
+//             c.commit();
+
+//             stmt.close();
+//             System.out.println("success");
+//         } catch (Exception e) {
+//             System.err.println(e.getClass().getName() + ": " + e.getMessage());
+//             try {
+//                 c.rollback();
+//             } catch (Exception e1) {
+//                 System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+//             }
+//         }
+
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//     }
+
+
+// private void update_warehouseSK(int w_suppkey, int i) {
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//         System.out.println("Insert PC");
+
+//         try {
+
+//             String sql = "UPDATE warehouse SET w_suppkey = ? WHERE w_warehousekey = " + nums.get(i);
+        
+            
+//             PreparedStatement stmt = c.prepareStatement(sql);
+
+//             stmt.setInt(1, w_suppkey);
+
+//             // STEP: Execute batch
+//             stmt.executeUpdate();
+
+//             // STEP: Commit transaction
+//             c.commit();
+
+//             stmt.close();
+//             System.out.println("success");
+//         } catch (Exception e) {
+//             System.err.println(e.getClass().getName() + ": " + e.getMessage());
+//             try {
+//                 c.rollback();
+//             } catch (Exception e1) {
+//                 System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+//             }
+//         }
+
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//     }
+
+//     private void update_warehouseNationKey(int w_nationkey, int i) {
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//         System.out.println("Insert PC");
+
+//         try {
+
+//             String sql = "UPDATE warehouse SET w_nationkey = ? WHERE w_warehousekey = " + nums.get(i);
+        
+            
+//             PreparedStatement stmt = c.prepareStatement(sql);
+
+//             stmt.setInt(1, w_nationkey);
+
+//             // STEP: Execute batch
+//             stmt.executeUpdate();
+
+//             // STEP: Commit transaction
+//             c.commit();
+
+//             stmt.close();
+//             System.out.println("success");
+//         } catch (Exception e) {
+//             System.err.println(e.getClass().getName() + ": " + e.getMessage());
+//             try {
+//                 c.rollback();
+//             } catch (Exception e1) {
+//                 System.err.println(e1.getClass().getName() + ": " + e1.getMessage());
+//             }
+//         }
+
+//         System.out.println("++++++++++++++++++++++++++++++++++");
+//     }
+
+// public void get_warehouseNames(){
+//         for(int i = 1; i < nums.size(); i++){
+//             String sql = "SELECT n1.n_name, s_name, n1.n_nationkey " +
+//             "FROM lineitem, customer, orders, nation n1, nation n2, supplier " + 
+//             "WHERE l_suppkey = " + nums.get(i) +
+//             " AND c_custkey = o_custkey AND " +
+//             "l_orderkey = o_orderkey AND " +
+//             "n1.n_nationkey = c_nationkey AND " +
+//             "s_nationkey = n2.n_nationkey AND " +
+//             "s_suppkey = l_suppkey " +
+//             "GROUP BY n1.n_name " +
+//             "ORDER BY COUNT(l_orderkey) DESC " + 
+//             "LIMIT 2 ";
+   
+//         try (Statement stmt = c.createStatement()) {
+//             ResultSet rs = stmt.executeQuery(sql);
+//             while (rs.next()) {
+//                 nations.add(rs.getString("s_name") + "__" + rs.getString("n_name"));
+                
+//                 nations_key.add(rs.getInt("n_nationkey"));
+//             }
+//         } catch (SQLException e) {
+            
+//           }
+//     }
+        
+//     }
+
+
+
+//     public void get_warehouseCapacity(){
+//         for(int i = 1; i < nums.size(); i++){
+//             String sql = "SELECT MAX(maxPart) FROM (SELECT n1.n_name, COUNT(l_orderkey) ,SUM(2 * p_size) AS maxPart " +
+//             "FROM lineitem, customer, orders, nation n1, nation n2, supplier, part " + 
+//             "WHERE l_suppkey = " + nums.get(i) +
+//             " AND c_custkey = o_custkey AND " +
+//             "l_orderkey = o_orderkey AND " +
+//             "n1.n_nationkey = c_nationkey AND " +
+//             "s_nationkey = n2.n_nationkey AND " +
+//             "s_suppkey = l_suppkey AND " +
+//             "l_partkey = p_partkey " +
+//             "GROUP BY n1.n_name " +
+//             "ORDER BY COUNT(l_orderkey) DESC " + 
+//             "LIMIT 2) ";
+        
+//         try (Statement stmt = c.createStatement()) {
+//             ResultSet rs = stmt.executeQuery(sql);
+//             while (rs.next()) {
+//                 capacity.add(rs.getInt("MAX(maxPart)"));
+//                 capacity.add(rs.getInt("MAX(maxPart)"));
+//             }
+//         } catch (SQLException e) {
+            
+//           }
+//     }
+        
+//     }
+
+
+// public static void main(String args[]) {
+//         lab7RD sj = new lab7RD();
+        
+//         sj.openConnection("data/tpch.sqlite");
+//         sj.dropTable();
+//         sj.createTable();
+//         // sj.populateTable();
+//         sj.populateTable_warehouse();
+//         sj.delete_from();
+//         sj.closeConnection();    
+//     }
+
+// }
